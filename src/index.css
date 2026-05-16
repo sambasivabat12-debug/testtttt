@@ -1,0 +1,67 @@
+/* Global Reset & Mobile App Feel */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #1A3C5E;
+}
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background-color: #F0F4F8;
+  color: #1A2E3B;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Remove default button/input styles */
+button {
+  font-family: Georgia, serif;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input, textarea, select {
+  font-family: Georgia, serif;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Smooth scrolling */
+* {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars but keep functionality */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Prevent text selection on buttons */
+button, a {
+  user-select: none;
+  -webkit-user-select: none;
+}
