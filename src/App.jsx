@@ -88,7 +88,7 @@ const printContent = (html, title="Sri Sai Dental Care") => {
     ${html}
     <div class="footer">${CLINIC.name} · ${CLINIC.address} · 📞 ${CLINIC.phone}</div>
     <button class="print-btn" onclick="window.print()">🖨 Print this document</button>
-    <script>setTimeout(function(){ window.print(); }, 600);<\/script>
+    <script>setTimeout(function(){ window.print(); }, 600);</script>
   </body></html>`;
   try {
     const blob = new Blob([full], { type:"text/html" });
@@ -118,7 +118,7 @@ function PatientLoginView({ onLogin }) {
   const [pin, setPin] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  // const [otpSent, setOtpSent] = useState(false);
 
   const login = () => {
     const user = MOCK_USERS.find(u => u.phone === phone.replace(/\D/g,"") && u.pin === pin);
