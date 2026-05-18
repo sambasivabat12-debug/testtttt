@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCBrDibcRlHPtuXEgp85LIjJZ-_ta8",
+  apiKey: "AIzaSyCqmoCBrDibcRlHPtuXEgp85LIjJZ-_ta8",
   authDomain: "sri-sai-speciality-dental-care.firebaseapp.com",
   projectId: "sri-sai-speciality-dental-care",
   storageBucket: "sri-sai-speciality-dental-care.firebasestorage.app",
