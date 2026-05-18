@@ -116,6 +116,7 @@ async function registerPatient(name, email, password, phone) {
   const uid = cred.user.uid;
   await setDoc(doc(db, "users", uid), { uid, name, email, phone, role: "patient", createdAt: serverTimestamp() });
   await setDoc(doc(db, "patients", uid), { uid, name, email, phone, history: [], createdAt: serverTimestamp() });
+  saveToSheet({ type:"patient", name, email, phone });
   return { id: uid, name, email, phone, history: [], nextAppt: null, upcomingTreatment: null };
 }
 
