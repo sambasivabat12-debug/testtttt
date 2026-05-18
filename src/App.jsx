@@ -368,6 +368,7 @@ function PatientBookingView({ patient }) {
 
     // Also send WhatsApp
     const msg = `🦷 APPOINTMENT BOOKING\nPatient: ${patient?.name || "Guest"}\nPhone: ${patient?.phone || "N/A"}\nDoctor: ${sel.doctor.name}\nTreatment: ${sel.treatment}\nDate: ${sel.date}\nTime: ${sel.slot}\nNotes: ${sel.notes || "None"}\n\nSri Sai Speciality Dental Care App`;
+    saveToSheet({ type:"appointment", patientName: patient?.name||"Guest", patientPhone: patient?.phone||"", doctorName: sel.doctor?.name, treatmentType: sel.treatment, date: sel.date, timeSlot: sel.slot, notes: sel.notes, status:"pending" });
     window.open(WA(msg), "_blank");
     setSaving(false);
     setDone(true);
