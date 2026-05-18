@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./index.css";
-
-// ─── FIREBASE IMPORTS ─────────────────────────────────────────────────────────
 import { auth, db } from "./firebase";
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbwNRHhSf1uHAoPvLvrGZLAhmBUecHvAdaErhWs63W1R-p6Yoo_A-BJN7KYV_8Vkogsy/exec";
-const saveToSheet = (data) => fetch(SHEET_URL, { method:"POST", body: JSON.stringify(data) }).catch(()=>{});
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -15,6 +11,9 @@ import {
   collection, addDoc, doc, getDoc, getDocs, setDoc,
   updateDoc, query, where, orderBy, serverTimestamp, onSnapshot,
 } from "firebase/firestore";
+
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwNRHhSf1uHAoPvLvrGZLAhmBUecHvAdaErhWs63W1R-p6Yoo_A-BJN7KYV_8Vkogsy/exec";
+const saveToSheet = (data) => fetch(SHEET_URL, { method:"POST", body: JSON.stringify(data) }).catch(()=>{});
 
 const C = {
   bg: "#F0F4F8", card: "#FFFFFF", navy: "#1A3C5E", teal: "#2A9D8F",
@@ -41,7 +40,6 @@ const GALLERY_CASES = [
   { id:6, title:"Beautiful Smiles",      tag:"Prosthodontics", doc:"Dr. T. Venkat Rao",  before:"Toothless — no confidence",  after:"Full dentures, radiant smile", color:C.green,  icon:"💎" },
 ];
 
-// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 const Card = ({ children, style={}, onClick }) => (
   <div onClick={onClick} style={{ background:C.card, borderRadius:16, padding:20, boxShadow:"0 2px 16px rgba(26,60,94,0.07)", ...style }}>{children}</div>
 );
@@ -69,7 +67,6 @@ const WAIcon = ({ size=16 }) => (
   </svg>
 );
 
-// ─── PRINT HELPER ─────────────────────────────────────────────────────────────
 const printContent = (html, title="Sri Sai Dental Care") => {
   const full = `<!DOCTYPE html><html><head><title>${title}</title><style>
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -82,7 +79,6 @@ const printContent = (html, title="Sri Sai Dental Care") => {
     th{background:#1A3C5E;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;}
     td{padding:8px 10px;border-bottom:1px solid #eee;font-size:12px;vertical-align:top;}
     tr:nth-child(even) td{background:#f9f9f9;}
-    .badge{background:#E8F4F3;color:#2A9D8F;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;}
     .footer{margin-top:20px;padding-top:10px;border-top:1px solid #eee;font-size:10px;color:#8A9BB0;text-align:center;}
     .print-btn{margin-top:18px;display:block;background:#1A3C5E;color:#fff;border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;}
     @media print{.print-btn{display:none!important;} body{padding:16px;}}
@@ -109,8 +105,6 @@ const printContent = (html, title="Sri Sai Dental Care") => {
   }
 };
 
-// ─── FIREBASE: PATIENT AUTH ───────────────────────────────────────────────────
-// Saves user profile to Firestore on register
 async function registerPatient(name, email, password, phone) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   const uid = cred.user.uid;
@@ -126,13 +120,11 @@ async function loginPatient(email, password) {
   const snap = await getDoc(doc(db, "patients", uid));
   if (!snap.exists()) throw new Error("Patient record not found");
   const data = snap.data();
-  // Fetch treatments as history
   const tSnap = await getDocs(query(collection(db, "patients", uid, "treatments"), orderBy("date","desc")));
   const history = tSnap.docs.map(d => d.data());
   return { id: uid, ...data, history };
 }
 
-// ─── PATIENT LOGIN ────────────────────────────────────────────────────────────
 function PatientLoginView({ onLogin }) {
   const [tab, setTab] = useState("login");
   const [email, setEmail] = useState("");
@@ -144,12 +136,8 @@ function PatientLoginView({ onLogin }) {
 
   const login = async () => {
     setLoading(true); setError("");
-    try {
-      const user = await loginPatient(email, password);
-      onLogin(user);
-    } catch(e) {
-      setError("Incorrect email or password. Please try again.");
-    }
+    try { const user = await loginPatient(email, password); onLogin(user); }
+    catch(e) { setError("Incorrect email or password. Please try again."); }
     setLoading(false);
   };
 
@@ -160,9 +148,7 @@ function PatientLoginView({ onLogin }) {
       const user = await registerPatient(name, email, password, phone);
       window.open(WA(`🆕 NEW PATIENT REGISTRATION\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nPlease add to system.\n— Sri Sai App`), "_blank");
       onLogin(user);
-    } catch(e) {
-      setError(e.message || "Registration failed. Try again.");
-    }
+    } catch(e) { setError(e.message || "Registration failed. Try again."); }
     setLoading(false);
   };
 
@@ -173,21 +159,18 @@ function PatientLoginView({ onLogin }) {
         <h2 style={{ fontSize:20, fontWeight:800, color:C.navy, margin:"12px 0 4px" }}>Patient Portal</h2>
         <p style={{ color:C.muted, fontSize:13, margin:0 }}>Login to view appointments & history</p>
       </div>
-
       <div style={{ display:"flex", borderRadius:12, overflow:"hidden", border:`2px solid ${C.soft}` }}>
         {["login","register"].map(t => (
           <button key={t} onClick={() => { setTab(t); setError(""); }} style={{ flex:1, padding:"10px", border:"none", background:tab===t?C.teal:"white", color:tab===t?"#fff":C.muted, fontWeight:700, fontSize:13, cursor:"pointer", textTransform:"capitalize" }}>{t === "login" ? "🔑 Login" : "📝 Register"}</button>
         ))}
       </div>
-
       <Card style={{ padding:20 }}>
         {tab === "login" ? (
           <>
             {[["Email","email","email",email,setEmail],["Password","password","password",password,setPassword]].map(([ph,field,type,val,set]) => (
               <div key={field} style={{ marginBottom:14 }}>
                 <label style={{ fontSize:12, color:C.muted, fontWeight:600, display:"block", marginBottom:6 }}>{ph}</label>
-                <input value={val} onChange={e => set(e.target.value)} placeholder={ph} type={type}
-                  style={{ width:"100%", padding:"11px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
+                <input value={val} onChange={e => set(e.target.value)} placeholder={ph} type={type} style={{ width:"100%", padding:"11px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
               </div>
             ))}
             {error && <div style={{ background:"#FEECEC", color:C.danger, borderRadius:10, padding:"8px 12px", fontSize:12, marginBottom:12 }}>{error}</div>}
@@ -198,8 +181,7 @@ function PatientLoginView({ onLogin }) {
             {[["Full Name","name","text",name,setName],["Email","email","email",email,setEmail],["Phone Number","phone","tel",phone,setPhone],["Password","password","password",password,setPassword]].map(([ph,field,type,val,set]) => (
               <div key={field} style={{ marginBottom:14 }}>
                 <label style={{ fontSize:12, color:C.muted, fontWeight:600, display:"block", marginBottom:6 }}>{ph}</label>
-                <input value={val} onChange={e => set(e.target.value)} placeholder={ph} type={type}
-                  style={{ width:"100%", padding:"11px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
+                <input value={val} onChange={e => set(e.target.value)} placeholder={ph} type={type} style={{ width:"100%", padding:"11px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
               </div>
             ))}
             {error && <div style={{ background:"#FEECEC", color:C.danger, borderRadius:10, padding:"8px 12px", fontSize:12, marginBottom:12 }}>{error}</div>}
@@ -211,7 +193,6 @@ function PatientLoginView({ onLogin }) {
   );
 }
 
-// ─── PATIENT DASHBOARD ────────────────────────────────────────────────────────
 function PatientDashboard({ patient, onLogout }) {
   const [tab, setTab] = useState("home");
   const [prescriptions, setPrescriptions] = useState([]);
@@ -228,10 +209,7 @@ function PatientDashboard({ patient, onLogout }) {
 
   const printHistory = () => {
     const rows = (patient.history||[]).map(h => `<tr><td>${h.date||""}</td><td>${h.treatmentType||h.treatment||""}</td><td>${h.doctorId||h.doctor||""}</td><td>₹${(h.cost||h.amount||0).toLocaleString("en-IN")}</td></tr>`).join("");
-    printContent(`
-      <div class="header"><div><h1>${CLINIC.name}</h1><h2>Treatment History</h2></div><div class="clinic">Patient: ${patient.name}<br/>Phone: ${patient.phone}</div></div>
-      <table><thead><tr><th>Date</th><th>Treatment</th><th>Doctor</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
-    `, "Treatment History");
+    printContent(`<div class="header"><div><h1>${CLINIC.name}</h1><h2>Treatment History</h2></div><div class="clinic">Patient: ${patient.name}<br/>Phone: ${patient.phone}</div></div><table><thead><tr><th>Date</th><th>Treatment</th><th>Doctor</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>`, "Treatment History");
   };
 
   return (
@@ -243,13 +221,11 @@ function PatientDashboard({ patient, onLogout }) {
         </div>
         <button onClick={onLogout} style={{ background:C.soft, border:"none", borderRadius:20, padding:"6px 14px", color:C.muted, fontWeight:700, fontSize:12, cursor:"pointer" }}>Logout</button>
       </div>
-
       <div style={{ display:"flex", gap:6, overflowX:"auto" }}>
         {[["home","🏠 Home"],["book","📅 Book"],["history","📋 History"],["myrx","💊 Prescriptions"]].map(([t,l]) => (
           <button key={t} onClick={() => setTab(t)} style={{ flexShrink:0, padding:"7px 14px", borderRadius:20, border:`2px solid ${tab===t?C.teal:C.soft}`, background:tab===t?C.teal:"white", color:tab===t?"#fff":C.muted, fontWeight:700, fontSize:12, cursor:"pointer" }}>{l}</button>
         ))}
       </div>
-
       {tab === "home" && (
         <>
           <div style={{ display:"flex", gap:12 }}>
@@ -261,14 +237,10 @@ function PatientDashboard({ patient, onLogout }) {
               </div>
             ))}
           </div>
-          <Btn full color={"#25D366"} onClick={() => window.open(WA(`Hi Sri Sai Speciality Dental Care! I'd like to book an appointment.`), "_blank")}>
-            💬 Chat with Clinic on WhatsApp
-          </Btn>
+          <Btn full color={"#25D366"} onClick={() => window.open(WA(`Hi Sri Sai Speciality Dental Care! I'd like to book an appointment.`), "_blank")}>💬 Chat with Clinic on WhatsApp</Btn>
         </>
       )}
-
       {tab === "book" && <PatientBookingView patient={patient} />}
-
       {tab === "history" && (
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -289,7 +261,6 @@ function PatientDashboard({ patient, onLogout }) {
           ))}
         </div>
       )}
-
       {tab === "myrx" && (
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div style={{ fontWeight:800, fontSize:15, color:C.navy }}>My Prescriptions</div>
@@ -306,12 +277,7 @@ function PatientRxCard({ rx }) {
   const meds = rx.medicines || rx.meds || [];
   const printRx = () => {
     const rows = meds.map(m => `<tr><td>${m.name}</td><td>${m.dosage||m.dose}</td><td>${m.frequency||m.freq}</td><td>${m.duration||m.days} days</td></tr>`).join("");
-    printContent(`
-      <div class="header"><div><h1>${CLINIC.name}</h1><h2>Prescription</h2></div><div class="clinic">Date: ${rx.createdAt?.toDate?.()?.toLocaleDateString()||rx.date||""}<br/>Doctor: ${rx.doctorName||rx.doctor}</div></div>
-      <p><strong>Patient:</strong> ${rx.patientName||rx.patient} &nbsp; <strong>Diagnosis:</strong> ${rx.diagnosis}</p>
-      <table><thead><tr><th>Medicine</th><th>Dose</th><th>Frequency</th><th>Duration</th></tr></thead><tbody>${rows}</tbody></table>
-      ${rx.notes ? `<p><strong>Instructions:</strong> ${rx.notes}</p>` : ""}
-    `, "Prescription");
+    printContent(`<div class="header"><div><h1>${CLINIC.name}</h1><h2>Prescription</h2></div><div class="clinic">Date: ${rx.createdAt?.toDate?.()?.toLocaleDateString()||rx.date||""}<br/>Doctor: ${rx.doctorName||rx.doctor}</div></div><p><strong>Patient:</strong> ${rx.patientName||rx.patient} &nbsp; <strong>Diagnosis:</strong> ${rx.diagnosis}</p><table><thead><tr><th>Medicine</th><th>Dose</th><th>Frequency</th><th>Duration</th></tr></thead><tbody>${rows}</tbody></table>${rx.notes ? `<p><strong>Instructions:</strong> ${rx.notes}</p>` : ""}`, "Prescription");
   };
   return (
     <Card style={{ padding:16 }}>
@@ -339,7 +305,6 @@ function PatientRxCard({ rx }) {
   );
 }
 
-// ─── PATIENT BOOKING (saves to Firestore) ─────────────────────────────────────
 function PatientBookingView({ patient }) {
   const [step, setStep] = useState(1);
   const [sel, setSel] = useState({ doctor:null, treatment:"", date:"", slot:"", notes:"" });
@@ -350,7 +315,6 @@ function PatientBookingView({ patient }) {
     if (!sel.doctor || !sel.treatment || !sel.date || !sel.slot) return;
     setSaving(true);
     try {
-      // Save to Firestore
       await addDoc(collection(db, "appointments"), {
         patientId: patient?.id || "guest",
         patientName: patient?.name || "Guest",
@@ -365,8 +329,6 @@ function PatientBookingView({ patient }) {
         createdAt: serverTimestamp(),
       });
     } catch(e) { console.error("Booking error:", e); }
-
-    // Also send WhatsApp
     const msg = `🦷 APPOINTMENT BOOKING\nPatient: ${patient?.name || "Guest"}\nPhone: ${patient?.phone || "N/A"}\nDoctor: ${sel.doctor.name}\nTreatment: ${sel.treatment}\nDate: ${sel.date}\nTime: ${sel.slot}\nNotes: ${sel.notes || "None"}\n\nSri Sai Speciality Dental Care App`;
     saveToSheet({ type:"appointment", patientName: patient?.name||"Guest", patientPhone: patient?.phone||"", doctorName: sel.doctor?.name, treatmentType: sel.treatment, date: sel.date, timeSlot: sel.slot, notes: sel.notes, status:"pending" });
     window.open(WA(msg), "_blank");
@@ -437,8 +399,7 @@ function PatientBookingView({ patient }) {
             <div style={{ fontWeight:700, fontSize:14, color:C.navy, marginBottom:14 }}>Pick Date & Time</div>
             <div style={{ marginBottom:14 }}>
               <label style={{ fontSize:12, color:C.muted, fontWeight:600, display:"block", marginBottom:6 }}>Date</label>
-              <input type="date" value={sel.date} onChange={e => setSel(s => ({ ...s, date:e.target.value }))}
-                style={{ width:"100%", padding:"10px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
+              <input type="date" value={sel.date} onChange={e => setSel(s => ({ ...s, date:e.target.value }))} style={{ width:"100%", padding:"10px 14px", border:`1.5px solid ${C.soft}`, borderRadius:12, fontSize:14, boxSizing:"border-box", outline:"none" }} />
             </div>
             <div style={{ fontWeight:600, fontSize:12, color:C.muted, marginBottom:8 }}>Available Slots — {sel.doctor?.name}</div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
@@ -480,7 +441,6 @@ function PatientBookingView({ patient }) {
   );
 }
 
-// ─── DASHBOARD (loads appointments from Firestore) ────────────────────────────
 function DashboardView({ setView }) {
   const [appts, setAppts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -489,10 +449,8 @@ function DashboardView({ setView }) {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [confirmDel, setConfirmDel] = useState(null);
-
   const today = new Date().toISOString().split("T")[0];
 
-  // Real-time listener for today's appointments
   useEffect(() => {
     const q = query(collection(db, "appointments"), where("date","==", today));
     const unsub = onSnapshot(q, snap => {
@@ -527,7 +485,6 @@ function DashboardView({ setView }) {
         <p style={{ color:C.teal, margin:"2px 0 0", fontSize:12, fontStyle:"italic" }}>"Beauty is power and smile its sword"</p>
         <p style={{ color:C.muted, margin:"2px 0 0", fontSize:12 }}>{new Date().toDateString()} · {appts.length} appointments today</p>
       </div>
-
       <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
         {[["📅","Today's Appts",appts.length,C.teal],["⏳","Pending",appts.filter(a=>a.status==="pending"||a.status==="upcoming").length,C.danger]].map(([ic,l,v,col]) => (
           <div key={l} style={{ flex:1, minWidth:110, background:C.card, borderRadius:14, padding:12, boxShadow:"0 2px 10px rgba(26,60,94,0.07)", display:"flex", gap:10, alignItems:"center" }}>
@@ -536,13 +493,11 @@ function DashboardView({ setView }) {
           </div>
         ))}
       </div>
-
       <Card style={{ padding:16 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ fontWeight:800, fontSize:14, color:C.navy }}>Today's Schedule</div>
           <Btn small onClick={() => setShowAdd(!showAdd)}>+ Add</Btn>
         </div>
-
         {showAdd && (
           <div style={{ background:C.soft, borderRadius:12, padding:14, marginBottom:12 }}>
             <div style={{ fontWeight:700, fontSize:13, color:C.navy, marginBottom:10 }}>New Appointment</div>
@@ -562,10 +517,8 @@ function DashboardView({ setView }) {
             </div>
           </div>
         )}
-
         {loading && <div style={{ textAlign:"center", color:C.muted, padding:"20px 0" }}>Loading appointments...</div>}
         {!loading && appts.length === 0 && <div style={{ textAlign:"center", color:C.muted, padding:"20px 0", fontSize:13 }}>No appointments today. Tap + Add to create one.</div>}
-
         {appts.map(a => (
           <div key={a.id}>
             {editId === a.id ? (
@@ -611,13 +564,11 @@ function DashboardView({ setView }) {
           </div>
         ))}
       </Card>
-
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
         {[["📅 Book Appt","booking",C.teal],["💰 Payments","payments",C.green],["🦷 Tooth Chart","chart",C.navy],["🤖 AI Help","ai",C.purple]].map(([l,v,col]) => (
           <button key={v} onClick={() => setView(v)} style={{ padding:"14px", background:col+"12", border:`1.5px solid ${col}22`, borderRadius:14, cursor:"pointer", textAlign:"center", fontWeight:700, fontSize:13, color:col }}>{l}</button>
         ))}
       </div>
-
       <Btn full color="#25D366" onClick={() => window.open(WA("Hi Sri Sai Speciality Dental Care! I'd like to get information about dental treatments."), "_blank")}>
         <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}><WAIcon size={16}/> Chat with Clinic on WhatsApp</span>
       </Btn>
@@ -625,14 +576,12 @@ function DashboardView({ setView }) {
   );
 }
 
-// ─── PRESCRIPTIONS (saves to Firestore) ───────────────────────────────────────
 function PrescriptionsView() {
   const [rxList, setRxList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newRx, setNewRx] = useState(false);
   const [sel, setSel] = useState(null);
   const [form, setForm] = useState({ patient:"", patientId:"", doctor:DOCTORS[0].name, diagnosis:"", notes:"", meds:[{name:"",dosage:"",frequency:"",duration:""}] });
-  const fileRef = useRef(null);
 
   useEffect(() => {
     const q = query(collection(db, "prescriptions"), orderBy("createdAt","desc"));
@@ -649,14 +598,9 @@ function PrescriptionsView() {
   const submit = async () => {
     if (!form.patient || !form.diagnosis) return;
     await addDoc(collection(db, "prescriptions"), {
-      patientName: form.patient,
-      patientId: form.patientId || "manual",
-      doctorName: form.doctor,
-      diagnosis: form.diagnosis,
-      notes: form.notes,
-      medicines: form.meds,
-      isActive: true,
-      createdAt: serverTimestamp(),
+      patientName: form.patient, patientId: form.patientId || "manual",
+      doctorName: form.doctor, diagnosis: form.diagnosis,
+      notes: form.notes, medicines: form.meds, isActive: true, createdAt: serverTimestamp(),
     });
     saveToSheet({ type:"prescription", patientName: form.patient, doctorName: form.doctor, diagnosis: form.diagnosis, medicines: form.meds, notes: form.notes });
     setNewRx(false);
@@ -671,12 +615,7 @@ function PrescriptionsView() {
   const printRx = (rx) => {
     const meds = rx.medicines || rx.meds || [];
     const rows = meds.map(m => `<tr><td>${m.name}</td><td>${m.dosage||m.dose}</td><td>${m.frequency||m.freq}</td><td>${m.duration||m.days} days</td></tr>`).join("");
-    printContent(`
-      <div class="header"><div><h1>${CLINIC.name}</h1><h2>Prescription</h2></div><div class="clinic">Date: ${rx.createdAt?.toDate?.()?.toLocaleDateString()||""}<br/>Doctor: ${rx.doctorName||rx.doctor}</div></div>
-      <p><strong>Patient:</strong> ${rx.patientName||rx.patient} &nbsp;&nbsp; <strong>Diagnosis:</strong> ${rx.diagnosis}</p>
-      <table><thead><tr><th>Medicine</th><th>Dose</th><th>Frequency</th><th>Duration</th></tr></thead><tbody>${rows}</tbody></table>
-      ${rx.notes?`<p><strong>Instructions:</strong> ${rx.notes}</p>`:""}
-    `, "Prescription");
+    printContent(`<div class="header"><div><h1>${CLINIC.name}</h1><h2>Prescription</h2></div><div class="clinic">Date: ${rx.createdAt?.toDate?.()?.toLocaleDateString()||""}<br/>Doctor: ${rx.doctorName||rx.doctor}</div></div><p><strong>Patient:</strong> ${rx.patientName||rx.patient} &nbsp;&nbsp; <strong>Diagnosis:</strong> ${rx.diagnosis}</p><table><thead><tr><th>Medicine</th><th>Dose</th><th>Frequency</th><th>Duration</th></tr></thead><tbody>${rows}</tbody></table>${rx.notes?`<p><strong>Instructions:</strong> ${rx.notes}</p>`:""}`, "Prescription");
   };
 
   return (
@@ -685,7 +624,6 @@ function PrescriptionsView() {
         <h2 style={{ fontSize:20, fontWeight:800, color:C.navy, margin:0 }}>Digital Prescriptions</h2>
         <Btn small color={C.purple} onClick={() => setNewRx(!newRx)}>+ New Rx</Btn>
       </div>
-
       {newRx && (
         <Card style={{ padding:16, border:`2px solid ${C.purple}` }}>
           <div style={{ fontWeight:800, fontSize:14, color:C.purple, marginBottom:14 }}>New Prescription</div>
@@ -721,9 +659,7 @@ function PrescriptionsView() {
           </div>
         </Card>
       )}
-
       {loading && <div style={{ textAlign:"center", color:C.muted, padding:20 }}>Loading prescriptions...</div>}
-
       {rxList.map(rx => {
         const meds = rx.medicines || rx.meds || [];
         return (
@@ -768,9 +704,8 @@ function PrescriptionsView() {
   );
 }
 
-// ─── GALLERY VIEW ─────────────────────────────────────────────────────────────
 function GalleryView() {
-  const [cases, setCases] = useState(GALLERY_CASES);
+  const [cases] = useState(GALLERY_CASES);
   const [sel, setSel] = useState(null);
   const [filter, setFilter] = useState("All");
   const tags = ["All", ...new Set(GALLERY_CASES.map(c => c.tag))];
@@ -811,9 +746,7 @@ function GalleryView() {
             </div>
             {sel === c.id && (
               <div style={{ padding:"14px 16px", borderTop:`1px solid ${C.soft}` }}>
-                <Btn small color={c.color} onClick={() => window.open(WA(`Hi, I saw the ${c.title} case on your app. I'd like to book a similar treatment.`), "_blank")}>
-                  💬 Book Similar Treatment
-                </Btn>
+                <Btn small color={c.color} onClick={() => window.open(WA(`Hi, I saw the ${c.title} case on your app. I'd like to book a similar treatment.`), "_blank")}>💬 Book Similar Treatment</Btn>
               </div>
             )}
           </Card>
@@ -823,7 +756,6 @@ function GalleryView() {
   );
 }
 
-// ─── PAYMENTS VIEW ────────────────────────────────────────────────────────────
 function PaymentsView() {
   const [invoices, setInvoices] = useState([
     { id:"INV-002", patient:"Priya Sharma", date:"2026-04-10", items:[{desc:"Root Canal",amount:8000}], status:"paid" },
@@ -837,10 +769,10 @@ function PaymentsView() {
   const revenue = invoices.filter(i => i.status==="paid").reduce((s,i) => s+total(i), 0);
   const outstanding = invoices.filter(i => i.status!=="paid").reduce((s,i) => s+total(i), 0);
   const PAY_METHODS = [
-    { id:"upi", label:"UPI", icon:"📲", color:"#5C35CC", desc:"Any UPI App" },
-    { id:"gpay", label:"Google Pay", icon:"🟦", color:"#4285F4", desc:"Google Pay" },
-    { id:"phonepe", label:"PhonePe", icon:"💜", color:"#6739B7", desc:"PhonePe UPI" },
-    { id:"razorpay", label:"Razorpay", icon:"💳", color:"#3395FF", desc:"Card / Net Banking" },
+    { id:"upi", label:"UPI", icon:"📲", color:"#5C35CC" },
+    { id:"gpay", label:"Google Pay", icon:"🟦", color:"#4285F4" },
+    { id:"phonepe", label:"PhonePe", icon:"💜", color:"#6739B7" },
+    { id:"razorpay", label:"Razorpay", icon:"💳", color:"#3395FF" },
   ];
   const doPayment = (inv) => {
     const amt = total(inv);
@@ -909,7 +841,6 @@ function PaymentsView() {
   );
 }
 
-// ─── TOOTH CHART ──────────────────────────────────────────────────────────────
 const TOOTH_UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
 const TOOTH_LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 const CONDS = [
@@ -921,6 +852,7 @@ const CONDS = [
   { key:"rootcanal", label:"Root Canal", color:"#F3E5F5", border:"#8E24AA" },
   { key:"implant",   label:"Implant",    color:"#E8F5E9", border:"#2E7D32" },
 ];
+
 function ToothChartView() {
   const initTeeth = () => { const t={}; [...TOOTH_UPPER,...TOOTH_LOWER].forEach(n=>{t[n]="healthy";}); t[16]="crown"; t[36]="decay"; t[11]="filled"; t[47]="rootcanal"; t[18]="missing"; return t; };
   const [teeth, setTeeth] = useState(initTeeth);
@@ -988,7 +920,6 @@ function ToothChartView() {
   );
 }
 
-// ─── AI ASSISTANT ─────────────────────────────────────────────────────────────
 function AIView() {
   const [msgs, setMsgs] = useState([{ role:"assistant", content:"Namaste! I'm the AI assistant for Sri Sai Speciality Dental Care. I can help with appointments, treatments, doctor info, or dental health questions. How can I help?" }]);
   const [input, setInput] = useState("");
@@ -1045,7 +976,6 @@ function AIView() {
   );
 }
 
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function DentalApp() {
   const [splash, setSplash] = useState(true);
   const [splashStep, setSplashStep] = useState(0);
@@ -1054,7 +984,6 @@ export default function DentalApp() {
   const [patientUser, setPatientUser] = useState(null);
   const [showPatientPortal, setShowPatientPortal] = useState(false);
 
-  // Listen for Firebase auth state
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser && showPatientPortal) {
@@ -1075,10 +1004,7 @@ export default function DentalApp() {
     return () => [t1,t2,t3,t4].forEach(clearTimeout);
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    setPatientUser(null);
-  };
+  const handleLogout = async () => { await signOut(auth); setPatientUser(null); };
 
   if (splash) return (
     <div style={{ minHeight:"100vh", background:C.navy, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"Georgia, serif" }}>
@@ -1204,16 +1130,13 @@ export default function DentalApp() {
           </a>
         </div>
       </header>
-
       <main style={{ flex:1, padding:"20px 16px 100px", maxWidth:640, margin:"0 auto", width:"100%", boxSizing:"border-box" }}>
         {views[view] || <DashboardView setView={setView}/>}
       </main>
-
       <a href={WA("Hi! I'd like to book an appointment at Sri Sai Speciality Dental Care.")} target="_blank" rel="noopener noreferrer"
         style={{ position:"fixed", bottom:90, right:16, width:52, height:52, borderRadius:"50%", background:"#25D366", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 16px rgba(37,211,102,0.5)", zIndex:200, textDecoration:"none" }}>
         <WAIcon size={26}/>
       </a>
-
       <nav style={{ position:"fixed", bottom:0, left:0, right:0, background:C.card, borderTop:"1px solid #E8EEF4", boxShadow:"0 -4px 20px rgba(26,60,94,0.08)", zIndex:100 }}>
         {showMore && (
           <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.soft}`, display:"flex", flexWrap:"wrap", gap:8 }}>
