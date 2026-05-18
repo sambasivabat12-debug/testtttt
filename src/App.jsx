@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./index.css";
 
 // ─── FIREBASE IMPORTS ─────────────────────────────────────────────────────────
-import { auth, db } from "./services/firebase";
+import { auth, db } from "./firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
