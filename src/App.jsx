@@ -658,6 +658,7 @@ function PrescriptionsView() {
       isActive: true,
       createdAt: serverTimestamp(),
     });
+    saveToSheet({ type:"prescription", patientName: form.patient, doctorName: form.doctor, diagnosis: form.diagnosis, medicines: form.meds, notes: form.notes });
     setNewRx(false);
     setForm({ patient:"", patientId:"", doctor:DOCTORS[0].name, diagnosis:"", notes:"", meds:[{name:"",dosage:"",frequency:"",duration:""}] });
   };
