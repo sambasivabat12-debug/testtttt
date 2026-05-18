@@ -1,8 +1,8 @@
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCqmoCBrDibcRlHPtuXEgp85LIjJZ-_ta8",
+  authDomain: "sri-sai-speciality-dental-care.firebaseapp.com",
+  projectId: "sri-sai-speciality-dental-care",
+  storageBucket: "sri-sai-speciality-dental-care.firebasestorage.app",
+  messagingSenderId: "244185236699",
+  appId: "1:244185236699:web:926ad6938ffca06f83b8fe"
 };
