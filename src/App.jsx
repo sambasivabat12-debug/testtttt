@@ -3,6 +3,8 @@ import "./index.css";
 
 // ─── FIREBASE IMPORTS ─────────────────────────────────────────────────────────
 import { auth, db } from "./firebase";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwNRHhSf1uHAoPvLvrGZLAhmBUecHvAdaErhWs63W1R-p6Yoo_A-BJN7KYV_8Vkogsy/exec";
+const saveToSheet = (data) => fetch(SHEET_URL, { method:"POST", body: JSON.stringify(data) }).catch(()=>{});
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
